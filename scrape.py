@@ -68,8 +68,8 @@ def fetch_all_transfers(filecoin_address):
     print(f"Total transfers to fetch: {total_count}")
 
     all_rows = []
-    for page in range(1, total_pages + 1):
-        print(f"Fetching data on page {page}/{total_pages}")
+    for page in range(total_pages):
+        print(f"Fetching data on page {page}/{total_pages - 1}")
         api_response, url = fetch_table_data(filecoin_address, page, page_size, "transfer")
         if api_response:
             headers, rows = extract_data_from_api_response(api_response)
