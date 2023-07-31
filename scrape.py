@@ -30,12 +30,16 @@ def extract_data_from_api_response(api_response):
             message["from"],
             message["to"],
             message["method"],
-            message["value"],
+            format_value(message["value"]),  # Format the Value column here
             message["receipt"]["exitCode"] if "receipt" in message else None,
         ]
         rows.append(row)
 
     return headers, rows
+
+def format_value(value):
+    # Convert the value to a float and then format it to have 18 decimal places
+    return "{:.18f}".format(float(value) / 1e18)
 
 def save_to_csv(filecoin_address, headers, rows):
     if not headers or not rows:
