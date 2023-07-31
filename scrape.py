@@ -55,36 +55,36 @@ def save_to_csv(filecoin_address, headers, rows):
 
     print(f"Data successfully saved to {file_name}")
 
-def fetch_all_transfers(filecoin_address):
+def fetch_all_transfers(filecoin_addresses):
     page_size = 100
-    total_count_response, _ = fetch_table_data(filecoin_address, 0, 1, "transfer")
-    total_count = total_count_response.get("totalCount", 0)
 
-    if total_count == 0:
-        print("No data found.")
-        return
+    for filecoin_address in filecoin_addresses:
+        total_count_response, _ = fetch_table_data(filecoin_address, 0, 1, "transfer")
+        total_count = total_count_response.get("totalCount", 0)
 
-    total_pages = (total_count + page_size - 1) // page_size
-    print(f"Total transfers to fetch: {total_count}")
+        if total_count == 0:
+            print(f"No data found for address {filecoin_address}.")
+            continue
 
-    all_rows = []
-    for page in range(total_pages):
-        print(f"Fetching data on page {page}/{total_pages - 1}")
-        api_response, url = fetch_table_data(filecoin_address, page, page_size, "transfer")
-        if api_response:
-            headers, rows = extract_data_from_api_response(api_response)
-            if headers and rows:
-                all_rows.extend(rows)
+        total_pages = (total_count + page_size - 1) // page_size
+        print(f"Total transfers to fetch for {filecoin_address}: {total_count}")
+
+        all_rows = []
+        for page in range(total_pages):
+            print(f"Fetching data on page {page}/{total_pages - 1} for address {filecoin_address}")
+            api_response, url = fetch_table_data(filecoin_address, page, page_size, "transfer")
+            if api_response:
+                headers, rows = extract_data_from_api_response(api_response)
+                if headers and rows:
+                    all_rows.extend(rows)
+                else:
+                    print(f"Failed to fetch data on page {page} or 'messages' not found.")
             else:
-                print(f"Failed to fetch data on page {page} or 'messages' not found.")
-        else:
-            print(f"Failed to fetch data on page {page} or 'messages' not found. URL: {url}")
+                print(f"Failed to fetch data on page {page} or 'messages' not found. URL: {url}")
 
-    return headers, all_rows
+        save_to_csv(filecoin_address, headers, all_rows)
 
 if __name__ == "__main__":
-    filecoin_address = input("Enter the Filecoin address to scrape data from: ")
-    headers, all_rows = fetch_all_transfers(filecoin_address)
-    if headers and all_rows:
-        # Save the data to a CSV file with the entered Filecoin address as the filename
-        save_to_csv(filecoin_address, headers, all_rows)
+    filecoin_addresses = input("Enter the Filecoin addresses to scrape data from (comma-separated): ")
+    filecoin_addresses = [address.strip() for address in filecoin_addresses.split(",")]
+    fetch_all_transfers(filecoin_addresses)
